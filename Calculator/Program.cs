@@ -11,7 +11,7 @@ namespace Calculator
         public static int currentTokenPosition = 0;
         public List<Token> tokens;
 
-        public static void Main(string[] args)
+        public static void main(string[] args)
         {
             String expression = "5+11";
             expression += " ";
