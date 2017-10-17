@@ -13,7 +13,7 @@ namespace Calculator
 
         public static void Main(string[] args)
         {
-            String expression = "(600+3+2)*5";
+            String expression = "5+11";
             expression += " ";
 
             Program calc = new Program();
@@ -25,8 +25,9 @@ namespace Calculator
             calc.PrettyPrint(calc.tokens);
             Console.WriteLine("--------------------------");
 
-            int result = calc.ArithmeticExpression();
-            Console.WriteLine("Expression Result: " + result);
+            //int result = calc.ArithmeticExpression();
+            //Console.WriteLine("Expression Result: " + result);
+            Console.WriteLine("Expression Result: " + calc.Expression());
         }
 
         public int Term()
@@ -104,6 +105,8 @@ namespace Calculator
             return result;
         }
 
+        //Arithmetic methods
+
         public int Add()
         {
             MatchAndEat(TokenType.ADD);
@@ -116,29 +119,31 @@ namespace Calculator
             return Term();
         }
 
-        public int Mod()
-        {
-            MatchAndEat(TokenType.MOD);
-            return Term();
-        }
-
         public int Multiply()
         {
             MatchAndEat(TokenType.MULTIPLY);
             return Factor();
         }
 
+        public int Divide()
+         {
+            MatchAndEat(TokenType.DIVIDE);
+            return Factor();
+         }
+
         public int Power()
         {
             MatchAndEat(TokenType.POWER);
-            return Term();
+            return PreFactor();
         }
 
-        public int Divide()
+        public int Mod()
         {
-            MatchAndEat(TokenType.DIVIDE);
+            MatchAndEat(TokenType.MOD);
             return Factor();
         }
+
+        //Tokenizer methods
 
         public Token CurrentToken()
         {
@@ -197,6 +202,108 @@ namespace Calculator
             }
             Console.WriteLine("You have got " + numberCount +
             " different number and " + opCount + " operators.");
+        }
+
+        //Boolean Methods
+
+        public bool Relation()
+        {
+            int leftExpressionResult = ArithmeticExpression();
+            bool result = false;
+            TokenType type = CurrentToken().type;
+            if (type == TokenType.EQUAL ||
+            type == TokenType.LESS ||
+            type == TokenType.GREATER ||
+            type == TokenType.LESSEQUAL ||
+            type == TokenType.GREATEREQUAL)
+            {
+                switch (CurrentToken().type)
+                {
+                    case TokenType.LESS:
+                        result = Less(leftExpressionResult);
+                        break;
+                    case TokenType.LESSEQUAL:
+                        result = LessEqual(leftExpressionResult);
+                        break;
+                    case TokenType.EQUAL:
+                        result = Equal(leftExpressionResult);
+                        break;
+                    case TokenType.GREATER:
+                        result = Greater(leftExpressionResult);
+                        break;
+                    case TokenType.GREATEREQUAL:
+                        result = GreaterEqual(leftExpressionResult);
+                        break;
+                }
+            }
+            return result;
+        }
+
+        public bool Less(int leftExpressionResult)
+        {
+            MatchAndEat(TokenType.LESS);
+            return leftExpressionResult < ArithmeticExpression();
+        }
+
+        public bool LessEqual(int leftExpressionResult)
+        {
+            MatchAndEat(TokenType.LESSEQUAL);
+            return leftExpressionResult <= ArithmeticExpression();
+        }
+
+        public bool Equal(int leftExpressionResult)
+        {
+            MatchAndEat(TokenType.EQUAL);
+            return leftExpressionResult == ArithmeticExpression();
+        }
+
+        public bool Greater(int leftExpressionResult)
+        {
+            MatchAndEat(TokenType.GREATER);
+            return leftExpressionResult > ArithmeticExpression();
+        }
+
+        public bool GreaterEqual(int leftExpressionResult)
+        {
+            MatchAndEat(TokenType.GREATEREQUAL);
+            return leftExpressionResult >= ArithmeticExpression();
+        }
+
+        public bool BooleanFactor()
+        {
+            return Relation();
+        }
+
+        public bool BooleanTerm()
+        {
+            bool result = BooleanFactor();
+            while (CurrentToken().type == TokenType.AND)
+            {
+                MatchAndEat(TokenType.AND);
+                result = result && BooleanFactor();
+            }
+            return result;
+        }
+
+        public bool BooleanExpression()
+        {
+            bool result = BooleanTerm();
+            while (CurrentToken().type == TokenType.OR)
+            {
+                switch (CurrentToken().type)
+                {
+                    case TokenType.OR:
+                        MatchAndEat(TokenType.OR);
+                        result = result || BooleanTerm();
+                        break;
+                }
+            }
+            return result;
+        }
+
+        public bool Expression()
+        {
+            return BooleanExpression();
         }
     }
 

@@ -25,12 +25,16 @@ namespace Calculator
 
         public bool IsOp(char chr)
         {
-            bool aritOp = chr == '+' || chr == '-' ||
-            chr == '*' || chr == '/';
-            return aritOp;
+            bool addOp = chr == '+' || chr == '-';
+            bool mulOp = chr == '*' || chr == '/' || chr == '%' || chr == '^';
+
+            bool compOp = chr == '<' || chr == '>' || chr == '=';
+            bool lgicOp = chr == '!' || chr == '|' || chr == '&';
+
+            return addOp || mulOp || compOp || lgicOp;
         }
 
-        public TokenType FindOpType(char firstOperator)
+        public TokenType FindOpType(char firstOperator, char nextChar)
         {
             TokenType type = TokenType.UNKNOWN;
             switch (firstOperator)
@@ -45,13 +49,35 @@ namespace Calculator
                     type = TokenType.MULTIPLY;
                     break;
                 case '/':
-                    type = TokenType. DIVIDE;
+                    type = TokenType.DIVIDE;
                     break;
                 case '%':
                     type = TokenType.MOD;
                     break;
                 case '^':
                     type = TokenType.POWER;
+                    break;
+                case '<':
+                    type = TokenType.LESS;
+                    if (nextChar == '=') type = TokenType.LESSEQUAL;
+                    break;
+                case '>':
+                    type = TokenType.GREATER;
+                    if (nextChar == '=') type = TokenType.GREATEREQUAL;
+                    break;
+                case '=':
+                    type = TokenType.ASSIGNMENT;
+                    if (nextChar == '=') type = TokenType.EQUAL;
+                    break;
+                case '!':
+                    type = TokenType.NOT;
+                    if (nextChar == '=') type = TokenType.NOTEQUAL;
+                    break;
+                case '|':
+                    type = TokenType.OR;
+                    break;
+                case '&':
+                    type = TokenType.AND;
                     break;
             }
             return type;
@@ -81,41 +107,59 @@ namespace Calculator
         public List<Token> Tokenize(String source)
         {
             List<Token> tokens = new List<Token>();
-            String token = "";
+            Token token = null;
+            String tokenText = "";
+            char firstOperator = '\0';
             TokenizeState state = TokenizeState.DEFAULT;
-            for (int i = 0; i < source.Length; i++)
+            for (int index = 0; index < source.Length; index++)
             {
-                char chr = source[i];
+                char chr = source[index];
                 switch (state)
                 {
                     case TokenizeState.DEFAULT:
-                        TokenType opType = FindOpType(chr);
                         if (IsOp(chr))
                         {
-                            tokens.Add(new Token(Char.ToString(chr), opType));
+                            firstOperator = chr;
+                            TokenType opType = FindOpType(firstOperator, '\0');
+                            token = new Token(Char.ToString(chr), opType);
+                            state = TokenizeState.OPERATOR;
+                        }
+                        else if (Char.IsDigit(chr))
+                        {
+                            tokenText += chr;
+                            state = TokenizeState.NUMBER;
                         }
                         else if (IsParen(chr))
                         {
                             TokenType parenType = FindParenType(chr);
                             tokens.Add(new Token(Char.ToString(chr), parenType));
                         }
-                        else if (Char.IsDigit(chr))
+                        break;
+                    case TokenizeState.OPERATOR:
+                        if (IsOp(chr))
                         {
-                            token += chr;
-                            state = TokenizeState.NUMBER;
+                            TokenType opType = FindOpType(firstOperator, chr);
+                            token = new Token(Char.ToString(firstOperator)
+                            + Char.ToString(chr), opType);
+                        }
+                        else
+                    {
+                            tokens.Add(token);
+                            state = TokenizeState.DEFAULT;
+                            index--;
                         }
                         break;
                     case TokenizeState.NUMBER:
                         if (Char.IsDigit(chr))
                         {
-                            token += chr;
+                            tokenText += chr;
                         }
                         else
                         {
-                            tokens.Add(new Token(token, TokenType.NUMBER));
-                            token = "";
+                            tokens.Add(new Token(tokenText, TokenType.NUMBER));
+                            tokenText = "";
                             state = TokenizeState.DEFAULT;
-                            i--;
+                            index--;
                         }
                         break;
                 }
@@ -123,7 +167,7 @@ namespace Calculator
             return tokens;
         }
 
-        public void PrettyPrint(List<Token> tokens)
+    public void PrettyPrint(List<Token> tokens)
         {
             int numberCount = 0;
             int opCount = 0;
