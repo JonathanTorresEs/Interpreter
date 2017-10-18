@@ -11,9 +11,9 @@ namespace Calculator
         public static int currentTokenPosition = 0;
         public List<Token> tokens;
 
-        public static void main(string[] args)
+        public static void Main(string[] args)
         {
-            String expression = "5+11";
+            String expression = "10 - (-4^2)";
             expression += " ";
 
             Program calc = new Program();
@@ -25,119 +25,140 @@ namespace Calculator
             calc.PrettyPrint(calc.tokens);
             Console.WriteLine("--------------------------");
 
-            //int result = calc.ArithmeticExpression();
-            //Console.WriteLine("Expression Result: " + result);
-            Console.WriteLine("Expression Result: " + calc.Expression());
+            Node result = calc.Expression();
+            Console.WriteLine(result.Eval());
         }
 
-        public int Term()
+        public Node Term()
         {
-            int result = PreFactor();
-            while (CurrentToken().type == TokenType.MULTIPLY ||
-            CurrentToken().type == TokenType.DIVIDE ||
-            CurrentToken().type == TokenType.MOD)
+            Node node = SignedFactor();
+
+            while (IsMulOp(CurrentToken().type))
             {
                 switch (CurrentToken().type)
                 {
                     case TokenType.MULTIPLY:
-                        result = result * Multiply();
+                        node = new BinOpNode(TokenType.MULTIPLY, node, Multiply());
                         break;
                     case TokenType.DIVIDE:
-                        result = result / Divide();
+                        node = new BinOpNode(TokenType.DIVIDE, node, Divide());
                         break;
                     case TokenType.MOD:
-                        result = result % Mod();
+                        node = new BinOpNode(TokenType.MOD, node, Mod());
                         break;
                 }
             }
-            return result;
+            return node;
         }   
 
-        public int ArithmeticExpression()
+        public Node ArithmeticExpression()
         {
-            int result = Term();
-            while (CurrentToken().type == TokenType.ADD ||
-            CurrentToken().type == TokenType.SUBTRACT)
+            Node node = Term();
+            while (IsAddOp(CurrentToken().type))
             {
                 switch (CurrentToken().type)
                 {
                     case TokenType.ADD:
-                        result = result + Add();
+                        node = new BinOpNode(TokenType.ADD, node, Add());
                         break;
                     case TokenType.SUBTRACT:
-                        result = result - Subtract();
+                        node = new BinOpNode(TokenType.SUBTRACT, node, Subtract());
                         break;
                 }
             }
-            return result;
+            return node;
 
         }
 
-        public int PreFactor()
+        public Node PreFactor()
         {
-            int result = Factor();
-            while (CurrentToken().type == TokenType.POWER)
+            Node node = Factor();
+
+            while (IsPowOp(CurrentToken().type))
             {
                 switch (CurrentToken().type)
                 {
                     case TokenType.POWER:
-                        result = (int) Math.Pow(result, Power());
+                        node = new BinOpNode(TokenType.POWER, node, Power());
                         break;
                 }
+            }
+            return node;
+        }
+
+        public Node Factor()
+        {
+            Node result = null;
+
+            if (CurrentToken().type == TokenType.LEFT_PAREN)
+            {
+                MatchAndEat(TokenType.LEFT_PAREN);
+                result = Expression();
+                MatchAndEat(TokenType.RIGHT_PAREN);
+            }
+            else if (IsNumber())
+            {
+                Token token = MatchAndEat(TokenType.NUMBER);
+                result = new NumberNode(Int32.Parse(token.text));
             }
             return result;
         }
 
-        public int Factor()
+        public Node SignedFactor()
         {
-            int result = 0;
-            if (CurrentToken().type == TokenType.LEFT_PAREN)
+            if (CurrentToken().type == TokenType.SUBTRACT)
             {
-                MatchAndEat(TokenType.LEFT_PAREN);
-                result = ArithmeticExpression();
-                MatchAndEat(TokenType.RIGHT_PAREN);
+                MatchAndEat(TokenType.SUBTRACT);
+                Node node = new NegOpNode(PreFactor());
+                return node;
             }
-            else if (CurrentToken().type == TokenType.NUMBER)
+            return PreFactor();
+        }
+
+        public Node NotFactor()
+        {
+            if (CurrentToken().type == TokenType.NOT)
             {
-                result = Int32.Parse(CurrentToken().text);
-                MatchAndEat(TokenType.NUMBER);
+                MatchAndEat(TokenType.NOT);
+                Node node = BooleanFactor();
+                return new NotOpNode(node);
             }
-            return result;
+            return BooleanFactor();
         }
 
         //Arithmetic methods
 
-        public int Add()
+        public Node Add()
         {
             MatchAndEat(TokenType.ADD);
             return Term();
         }
 
-        public int Subtract()
+        public Node Subtract()
         {
             MatchAndEat(TokenType.SUBTRACT);
             return Term();
         }
 
-        public int Multiply()
+        public Node Multiply()
         {
             MatchAndEat(TokenType.MULTIPLY);
             return Factor();
         }
 
-        public int Divide()
+        public Node Divide()
          {
             MatchAndEat(TokenType.DIVIDE);
             return Factor();
          }
 
-        public int Power()
+        public Node Power()
         {
             MatchAndEat(TokenType.POWER);
             return PreFactor();
         }
 
-        public int Mod()
+        public Node Mod()
         {
             MatchAndEat(TokenType.MOD);
             return Factor();
@@ -206,105 +227,143 @@ namespace Calculator
 
         //Boolean Methods
 
-        public bool Relation()
+        public Node Relation()
         {
-            int leftExpressionResult = ArithmeticExpression();
-            bool result = false;
-            TokenType type = CurrentToken().type;
-            if (type == TokenType.EQUAL ||
-            type == TokenType.LESS ||
-            type == TokenType.GREATER ||
-            type == TokenType.LESSEQUAL ||
-            type == TokenType.GREATEREQUAL)
+            Node node = ArithmeticExpression();
+            if (IsRelOp(CurrentToken().type))
             {
                 switch (CurrentToken().type)
                 {
                     case TokenType.LESS:
-                        result = Less(leftExpressionResult);
-                        break;
-                    case TokenType.LESSEQUAL:
-                        result = LessEqual(leftExpressionResult);
-                        break;
-                    case TokenType.EQUAL:
-                        result = Equal(leftExpressionResult);
+                        node = Less(node);
                         break;
                     case TokenType.GREATER:
-                        result = Greater(leftExpressionResult);
+                        node = Greater(node);
+                        break;
+                    case TokenType.EQUAL:
+                        node = Equal(node);
+                        break;
+                    case TokenType.NOTEQUAL:
+                        node = NotEqual(node);
+                        break;
+                    case TokenType.LESSEQUAL:
+                        node = LessEqual(node);
                         break;
                     case TokenType.GREATEREQUAL:
-                        result = GreaterEqual(leftExpressionResult);
+                        node = GreaterEqual(node);
                         break;
                 }
             }
-            return result;
+            return node;
         }
 
-        public bool Less(int leftExpressionResult)
+        public Node Less(Node node)
         {
             MatchAndEat(TokenType.LESS);
-            return leftExpressionResult < ArithmeticExpression();
+            return new BinOpNode(TokenType.LESS, node, ArithmeticExpression());
         }
 
-        public bool LessEqual(int leftExpressionResult)
-        {
-            MatchAndEat(TokenType.LESSEQUAL);
-            return leftExpressionResult <= ArithmeticExpression();
-        }
-
-        public bool Equal(int leftExpressionResult)
-        {
-            MatchAndEat(TokenType.EQUAL);
-            return leftExpressionResult == ArithmeticExpression();
-        }
-
-        public bool Greater(int leftExpressionResult)
+        public Node Greater(Node node)
         {
             MatchAndEat(TokenType.GREATER);
-            return leftExpressionResult > ArithmeticExpression();
+            return new BinOpNode(TokenType.GREATER, node, ArithmeticExpression());
         }
 
-        public bool GreaterEqual(int leftExpressionResult)
+        public Node Equal(Node node)
+        {
+            MatchAndEat(TokenType.EQUAL);
+            return new BinOpNode(TokenType.EQUAL, node, ArithmeticExpression());
+        }
+
+        public Node NotEqual(Node node)
+        {
+            MatchAndEat(TokenType.NOTEQUAL);
+            return new BinOpNode(TokenType.NOTEQUAL, node, ArithmeticExpression());
+        }
+
+        public Node LessEqual(Node node)
+        {
+            MatchAndEat(TokenType.LESSEQUAL);
+            return new BinOpNode(TokenType.LESSEQUAL, node, ArithmeticExpression());
+        }
+
+        public Node GreaterEqual(Node node)
         {
             MatchAndEat(TokenType.GREATEREQUAL);
-            return leftExpressionResult >= ArithmeticExpression();
+            return new BinOpNode(TokenType.GREATEREQUAL, node, ArithmeticExpression());
         }
 
-        public bool BooleanFactor()
+        public Node BooleanFactor()
         {
             return Relation();
         }
 
-        public bool BooleanTerm()
+        public Node BooleanTerm()
         {
-            bool result = BooleanFactor();
+            Node node = NotFactor();
             while (CurrentToken().type == TokenType.AND)
             {
                 MatchAndEat(TokenType.AND);
-                result = result && BooleanFactor();
+                node = new BinOpNode(TokenType.AND, node, NotFactor());
             }
-            return result;
+            return node;
         }
 
-        public bool BooleanExpression()
+        public Node BooleanExpression()
         {
-            bool result = BooleanTerm();
-            while (CurrentToken().type == TokenType.OR)
+            Node node = BooleanTerm();
+            while (IsLogicalOp(CurrentToken().type))
             {
                 switch (CurrentToken().type)
                 {
                     case TokenType.OR:
                         MatchAndEat(TokenType.OR);
-                        result = result || BooleanTerm();
+                        node = new BinOpNode(TokenType.OR, node, BooleanTerm());
                         break;
                 }
             }
-            return result;
+            return node;
         }
 
-        public bool Expression()
+        public Node Expression()
         {
             return BooleanExpression();
         }
+
+        //Parser Methods
+
+        public bool IsPowOp(TokenType type)
+        {
+            return type == TokenType.POWER;
+        }
+
+        public bool IsMulOp(TokenType type)
+        {
+            return type == TokenType.MULTIPLY || type == TokenType.DIVIDE || type == TokenType.MOD;
+        }
+        public bool IsAddOp(TokenType type)
+        {
+            return type == TokenType.ADD || type == TokenType.SUBTRACT;
+        }
+        public bool IsMultiDigitOp(TokenType type)
+        {
+            return type == TokenType.LESSEQUAL || type == TokenType.GREATEREQUAL;
+        }
+        public bool IsRelOp(TokenType type)
+        {
+            bool lgOps = type == TokenType.LESS || type == TokenType.GREATER;
+            bool eqOps = type == TokenType.EQUAL || type == TokenType.NOTEQUAL;
+            return eqOps || lgOps || IsMultiDigitOp(type);
+        }
+        public bool IsLogicalOp(TokenType type)
+        {
+            return type == TokenType.OR || type == TokenType.AND;
+        }
+        public bool IsNumber()
+        {
+            return CurrentToken().type == TokenType.NUMBER;
+        }
+
     }
 
 }

@@ -49,6 +49,12 @@ namespace Calculator
                 case TokenType.MULTIPLY:
                     result = (int)(ToInt(left) * ToInt(right));
                     break;
+                case TokenType.MOD:
+                    result = (int)(ToInt(left)) % (ToInt(right));
+                    break;
+                case TokenType.POWER:
+                    result = (int)(Math.Pow(ToInt(left), ToInt(right)));
+                    break;
                 case TokenType.DIVIDE:
                     if (ToInt(right) == 0)
                     {
@@ -85,7 +91,7 @@ namespace Calculator
             }
             return result;
         }
-        public static void Main(string[] args)
+        public static void main(string[] args)
         {
             NumberNode firstNumber = new NumberNode(100);
             NumberNode secondNumber = new NumberNode(200);
