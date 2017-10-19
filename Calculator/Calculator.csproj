@@ -49,12 +49,15 @@
     <Compile Include="NotOpNode.cs" />
     <Compile Include="NumberNode.cs" />
     <Compile Include="Parser.cs" />
+    <Compile Include="PrintNode.cs" />
+    <Compile Include="StatementsDemo.cs" />
     <Compile Include="Token.cs" />
     <Compile Include="Tokenizer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TokenizeState.cs" />
     <Compile Include="TokenType.cs" />
+    <Compile Include="WaitNode.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

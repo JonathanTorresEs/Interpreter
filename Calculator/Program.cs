@@ -11,22 +11,40 @@ namespace Calculator
         public static int currentTokenPosition = 0;
         public List<Token> tokens;
 
-        public static void Main(string[] args)
+        public static void main(string[] args)
         {
-            String expression = "10 - (-4^2)";
-            expression += " ";
-
-            Program calc = new Program();
             Tokenizer tokenizer = new Tokenizer();
+            Program calc = new Program();
+            List<String> expresssionList = new List<String>();
 
-            Console.WriteLine("Expression: " + expression);
-            Console.WriteLine("--------------------------");
-            calc.tokens = tokenizer.Tokenize(expression);
-            calc.PrettyPrint(calc.tokens);
-            Console.WriteLine("--------------------------");
+            // Remember, we use a trailing white space as a terminating character!
 
-            Node result = calc.Expression();
-            Console.WriteLine(result.Eval());
+            expresssionList.Add("(100*2+2)*2+5>=500 ");
+            expresssionList.Add("((5+1)*100-2+3) ");
+            expresssionList.Add("100-30/2+13>=10 ");
+            expresssionList.Add("(853+92*5)*10-20/2+771 ");
+            expresssionList.Add("(5)*2 ");
+
+            List<Node> commandList = new List<Node>();
+            foreach(String expression in expresssionList)
+            {
+                Console.WriteLine("Expression: " + expression);
+                currentTokenPosition = 0;
+                calc.tokens = tokenizer.Tokenize(expression);
+                Node node = calc.BooleanExpression();
+
+                if (node != null)
+                {
+
+                commandList.Add(node);
+                }
+            }
+
+            Console.WriteLine("");
+            Console.WriteLine("Now, lets calculate expressions...");
+
+            foreach (Node command in commandList)
+                Console.WriteLine("Expression Result: " + command.Eval());
         }
 
         public Node Term()
