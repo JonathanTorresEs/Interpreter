@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace Calculator
 {
-    class Parser
+    public class Parser
     {
+        public Dictionary<string, Object> symbolTable = new Dictionary<string, object>();
+
         public static int currentTokenPosition = 0;
         public List<Token> tokens;
 
@@ -116,7 +118,6 @@ namespace Calculator
         public Node Factor()
         {
             Node result = null;
-
             if (CurrentToken().type == TokenType.LEFT_PAREN)
             {
                 MatchAndEat(TokenType.LEFT_PAREN);
@@ -132,6 +133,10 @@ namespace Calculator
             {
                 Token token = MatchAndEat(TokenType.STRING);
                 result = new StringNode((token.text).ToString());
+            }
+            else if (IsKeyWord())
+            {
+                result = Variable();
             }
             return result;
         }
@@ -406,6 +411,18 @@ namespace Calculator
             return CurrentToken().type == TokenType.STRING;
         }
 
+        public bool IsKeyWord()
+        {
+            return CurrentToken().type == TokenType.KEYWORD;
+        }
+
+        public bool IsAssignment()
+        {
+            TokenType type = CurrentToken().type;
+            return type == TokenType.KEYWORD &&
+            NextToken().type == TokenType.ASSIGNMENT;
+        }
+
         public List<Token> getTokens()
         {
             return tokens;
@@ -415,10 +432,14 @@ namespace Calculator
         {
             Node node = null;
             TokenType type = CurrentToken().type;
-            if (type == TokenType.PRINT)
+            if (IsAssignment())
+            {
+                node = Assignment();
+            }
+            else if (type == TokenType.PRINT)
             {
                 MatchAndEat(TokenType.PRINT);
-                node = new PrintNode(Expression(), "sameline");
+                node = new PrintNode(Expression(), "sameline"); 
             }
             else if (type == TokenType.PRINTLN)
             {
@@ -432,11 +453,17 @@ namespace Calculator
             }
             else
             {
-
-            Console.WriteLine("Unknown language construct: "
-            + CurrentToken().text);
+                Console.WriteLine("Unknown language construct: "
+                + CurrentToken().text);
                 Environment.Exit(0);
             }
+            return node;
+        }
+
+        public Node Variable()
+        {
+            Token token = MatchAndEat(TokenType.KEYWORD);
+            Node node = new VariableNode(token.text, this);
             return node;
         }
 
@@ -450,6 +477,41 @@ namespace Calculator
             MatchAndEat(TokenType.END);
             Console.WriteLine("END TOKEN FOUND\n");
             return statements;
+        }
+
+        public Node Assignment()
+        {
+            Node node = null;
+            String name = MatchAndEat(TokenType.KEYWORD).text;
+            MatchAndEat(TokenType.ASSIGNMENT);
+            Node value = Expression();
+            node = new AssignmentNode(name, value, this);
+            return node;
+        }
+        //Symbol Methods
+
+        public Object setVariable(String name, Object value)
+        {
+            if (symbolTable.ContainsKey(name))
+            {
+                if ((name.Equals("PI")) || (name.Equals("EULER")))
+                {
+                    Console.WriteLine("Reserved Word: " + name);
+                    System.Environment.Exit(1);
+                }
+                symbolTable[name] = value;
+            }
+            else
+                symbolTable.Add(name, value);
+            return value;
+        }
+
+        public Object getVariable(String name)
+        {
+            Object value;
+            symbolTable.TryGetValue(name, out value);
+            if (value != null) return value;
+            return null;
         }
     }
 
