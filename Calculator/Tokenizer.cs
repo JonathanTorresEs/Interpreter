@@ -134,6 +134,11 @@ namespace Calculator
                             TokenType parenType = FindParenType(chr);
                             tokens.Add(new Token(Char.ToString(chr), parenType));
                         }
+                        else if (Char.IsLetter(chr))
+                        {
+                            tokenText += chr;
+                            state = TokenizeState.KEYWORD;
+                        }
                         break;
                     case TokenizeState.OPERATOR:
                         if (IsOp(chr))
@@ -162,12 +167,50 @@ namespace Calculator
                             index--;
                         }
                         break;
+                    case TokenizeState.KEYWORD:
+                        if (Char.IsLetterOrDigit(chr))
+                        {
+                            tokenText += chr;
+                        }
+                        else
+                        {
+                            TokenType type = FindStatementType(tokenText);
+                            tokens.Add(new Token(tokenText, type));
+                            tokenText = "";
+                            state = TokenizeState.DEFAULT;
+                            index--;
+                        }
+                        break;
                 }
             }
             return tokens;
         }
 
-    public void PrettyPrint(List<Token> tokens)
+        public TokenType FindStatementType(String str)
+        {
+            TokenType type = TokenType.UNKNOWN;
+            switch (str)
+            {
+                case "end":
+                    type = TokenType.END;
+                    break;
+                case "print":
+                    type = TokenType.PRINT;
+                    break;
+                case "println":
+                    type = TokenType.PRINTLN;
+                    break;
+                case "wait":
+                    type = TokenType.WAIT;
+                    break;
+                default:
+                    type = TokenType.KEYWORD;
+                    break;
+            }
+            return type;
+        }
+
+        public void PrettyPrint(List<Token> tokens)
         {
             int numberCount = 0;
             int opCount = 0;

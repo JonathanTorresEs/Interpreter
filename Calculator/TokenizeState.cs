@@ -4,6 +4,6 @@ namespace Calculator
 {
 public enum TokenizeState
     {
-        DEFAULT, OPERATOR, NUMBER
+        DEFAULT, OPERATOR, NUMBER, KEYWORD
     }
 }

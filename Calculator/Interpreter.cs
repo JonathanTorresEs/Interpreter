@@ -9,10 +9,12 @@ namespace Calculator
 {
     class Interpreter
     {
-        public static void main()
+        public static void Main()
         {
-            string[] args = { "script.con" };
-            bool debug = false;
+            Console.WriteLine("Ejecutando Interpreter");
+
+            string[] args = { "script.vpp" };
+            bool debug = true;
 
             if (args.Length < 1) {
                 Console.WriteLine("Usage: Demo <script>"); return;
@@ -28,6 +30,7 @@ namespace Calculator
 
             Interpreter interpreter = new Interpreter();
             String sourceCode = System.IO.File.ReadAllText(args[0])+" ";
+            Console.WriteLine(sourceCode);
             interpreter.Interpret(sourceCode, debug);
         }
 
@@ -35,9 +38,35 @@ namespace Calculator
         {
             Tokenizer tokenizer = new Tokenizer();
 
+            Console.WriteLine("Printing again source code:\n" + source);
+
             Parser parser = new Parser(tokenizer.Tokenize(source));
-            parser.setVariable("PI", 3.14159265358979);
-            parser.setVariable("EULER", 2.718281828459045);
+
+            if (debug)
+                DumpTokens(parser);
+
+            Console.WriteLine("Making list of scripts... ");
+
+            List<Node> script = parser.Block();
+
+            bool isEmpty = !script.Any();
+            if (isEmpty)
+            {
+                Console.WriteLine("script is empty");
+            }
+
+            foreach (Node statement in script)
+            {
+                Console.WriteLine("Evaluating statements: ");
+                statement.Eval();
+            }
+                
+
+            /*Tokenizer tokenizer = new Tokenizer();
+
+            Parser parser = new Parser(tokenizer.Tokenize(source));
+            //parser.setVariable("PI", 3.14159265358979);
+            //parser.setVariable("EULER", 2.718281828459045);
 
             if (debug)
                 DumpTokens(parser);
@@ -47,7 +76,7 @@ namespace Calculator
             List<Node> script = parser.Block();
 
             foreach(Node statement in script)
-                statement.Eval();
+                statement.Eval(); */
         }
 
         public void DumpTokens(Parser parser)

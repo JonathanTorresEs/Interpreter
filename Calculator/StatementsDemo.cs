@@ -8,7 +8,7 @@ namespace Calculator
 {
     class StatementsDemo
     {
-        public static void Main(string[] args)
+        public static void main(string[] args)
             {
                 Node firstMsg = new PrintNode(new NumberNode(1), "newline");
                 Node secondMsg = new PrintNode(new NumberNode(2), "newline");

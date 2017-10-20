@@ -44,16 +44,17 @@
   <ItemGroup>
     <Compile Include="BinOpNode.cs" />
     <Compile Include="BooleanNode.cs" />
+    <Compile Include="Interpreter.cs" />
     <Compile Include="NegOpNode.cs" />
     <Compile Include="Node.cs" />
     <Compile Include="NotOpNode.cs" />
     <Compile Include="NumberNode.cs" />
-    <Compile Include="Parser.cs" />
     <Compile Include="PrintNode.cs" />
-    <Compile Include="StatementsDemo.cs" />
+    <None Include="script.vpp" />
+    <None Include="StatementsDemo.cs" />
     <Compile Include="Token.cs" />
     <Compile Include="Tokenizer.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Parser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TokenizeState.cs" />
     <Compile Include="TokenType.cs" />
