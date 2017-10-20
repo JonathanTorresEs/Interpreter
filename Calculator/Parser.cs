@@ -128,6 +128,11 @@ namespace Calculator
                 Token token = MatchAndEat(TokenType.NUMBER);
                 result = new NumberNode(Int32.Parse(token.text));
             }
+            else if (IsString())
+            {
+                Token token = MatchAndEat(TokenType.STRING);
+                result = new StringNode((token.text).ToString());
+            }
             return result;
         }
 
@@ -396,6 +401,11 @@ namespace Calculator
             return CurrentToken().type == TokenType.NUMBER;
         }
 
+        public bool IsString()
+        {
+            return CurrentToken().type == TokenType.STRING;
+        }
+
         public List<Token> getTokens()
         {
             return tokens;
@@ -436,10 +446,9 @@ namespace Calculator
             while (!CurrentToken().type.Equals(TokenType.END))
             {
                 statements.Add(Statement());
-                Console.WriteLine("Added statement");
             }
             MatchAndEat(TokenType.END);
-            Console.WriteLine("END TOKEN FOUND");
+            Console.WriteLine("END TOKEN FOUND\n");
             return statements;
         }
     }

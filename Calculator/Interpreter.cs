@@ -14,7 +14,7 @@ namespace Calculator
             Console.WriteLine("Ejecutando Interpreter");
 
             string[] args = { "script.vpp" };
-            bool debug = true;
+            bool debug = false;
 
             if (args.Length < 1) {
                 Console.WriteLine("Usage: Demo <script>"); return;
@@ -30,7 +30,7 @@ namespace Calculator
 
             Interpreter interpreter = new Interpreter();
             String sourceCode = System.IO.File.ReadAllText(args[0])+" ";
-            Console.WriteLine(sourceCode);
+            Console.WriteLine(sourceCode + "\n");
             interpreter.Interpret(sourceCode, debug);
         }
 
@@ -38,29 +38,17 @@ namespace Calculator
         {
             Tokenizer tokenizer = new Tokenizer();
 
-            Console.WriteLine("Printing again source code:\n" + source);
-
             Parser parser = new Parser(tokenizer.Tokenize(source));
 
-            if (debug)
-                DumpTokens(parser);
+            if (debug) DumpTokens(parser);
 
-            Console.WriteLine("Making list of scripts... ");
+            parser.MatchAndEat(TokenType.SCRIPT);
 
             List<Node> script = parser.Block();
 
-            bool isEmpty = !script.Any();
-            if (isEmpty)
-            {
-                Console.WriteLine("script is empty");
-            }
-
             foreach (Node statement in script)
-            {
-                Console.WriteLine("Evaluating statements: ");
                 statement.Eval();
-            }
-                
+
 
             /*Tokenizer tokenizer = new Tokenizer();
 

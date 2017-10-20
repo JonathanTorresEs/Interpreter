@@ -52,6 +52,7 @@
     <Compile Include="PrintNode.cs" />
     <None Include="script.vpp" />
     <None Include="StatementsDemo.cs" />
+    <Compile Include="StringNode.cs" />
     <Compile Include="Token.cs" />
     <Compile Include="Tokenizer.cs" />
     <Compile Include="Parser.cs" />

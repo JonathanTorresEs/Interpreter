@@ -6,20 +6,20 @@ using System.Threading.Tasks;
 
 namespace Calculator
 {
-    class StringNode : Node
+    public class StringNode : Node
     {
         String text;
         public StringNode() { }
 
-        public StringNode(String text)
-        {
-            this.text = text;
-        }
-
-        public override Object Eval()
-        {
-            return text;
-        }
+    public StringNode(String text)
+    {
+        this.text = text;
+    }
+    public override Object Eval()
+    {
+        return text;
+    }
 
     }
+
 }

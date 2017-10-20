@@ -139,6 +139,14 @@ namespace Calculator
                             tokenText += chr;
                             state = TokenizeState.KEYWORD;
                         }
+                        else if (chr == '"')
+                        {
+                            state = TokenizeState.STRING;
+                        }
+                        else if (chr == '#')
+                        {
+                            state = TokenizeState.COMMENT;
+                        }
                         break;
                     case TokenizeState.OPERATOR:
                         if (IsOp(chr))
@@ -181,6 +189,22 @@ namespace Calculator
                             index--;
                         }
                         break;
+                    case TokenizeState.STRING:
+                        if (chr == '"')
+                        {
+                            tokens.Add(new Token(tokenText, TokenType.STRING));
+                            tokenText = "";
+                            state = TokenizeState.DEFAULT;
+                        }
+                        else
+                        {
+                            tokenText += chr;
+                        }
+                        break;
+                    case TokenizeState.COMMENT:
+                        if (chr == '\n')
+                            state = TokenizeState.DEFAULT;
+                        break;
                 }
             }
             return tokens;
@@ -202,6 +226,9 @@ namespace Calculator
                     break;
                 case "wait":
                     type = TokenType.WAIT;
+                    break;
+                case "script":
+                    type = TokenType.SCRIPT;
                     break;
                 default:
                     type = TokenType.KEYWORD;
