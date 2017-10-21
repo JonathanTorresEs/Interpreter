@@ -37,17 +37,16 @@ namespace Calculator
         public void Interpret(String source, bool debug)
         {
             Tokenizer tokenizer = new Tokenizer();
-
             Parser parser = new Parser(tokenizer.Tokenize(source));
 
             if (debug) DumpTokens(parser);
 
             parser.MatchAndEat(TokenType.SCRIPT);
 
-            List<Node> script = parser.Block();
+            Console.WriteLine("\n=============== Building block! =================\n");
+            Node script = parser.Block();
 
-            foreach (Node statement in script)
-                statement.Eval();
+            script.Eval();
 
 
             /*Tokenizer tokenizer = new Tokenizer();

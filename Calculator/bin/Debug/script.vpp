@@ -1,11 +1,9 @@
 script
-	count = 5
-	msg = count
-	println "Value of MSG is: "
-	print msg
-	println "Value of Count Variable is "
-	print count
-	count = count + 10
-	print "NEW Value of Count Variable is "
-	println count
+	count = 1
+	while count <= 5
+	wait 500
+	count = count + 1
+	wait 500
+	println "Count + 1"
+	end
 end

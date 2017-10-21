@@ -423,6 +423,11 @@ namespace Calculator
             NextToken().type == TokenType.ASSIGNMENT;
         }
 
+        public bool IsWhile()
+        {
+            return CurrentToken().type == TokenType.WHILE;
+        }
+
         public List<Token> getTokens()
         {
             return tokens;
@@ -435,6 +440,10 @@ namespace Calculator
             if (IsAssignment())
             {
                 node = Assignment();
+            }
+            else if (IsWhile())
+            {
+                node = While();
             }
             else if (type == TokenType.PRINT)
             {
@@ -450,8 +459,8 @@ namespace Calculator
             {
                 MatchAndEat(TokenType.WAIT);
                 node = new WaitNode(Expression());
-            }
-            else
+            } 
+            else 
             {
                 Console.WriteLine("Unknown language construct: "
                 + CurrentToken().text);
@@ -467,16 +476,17 @@ namespace Calculator
             return node;
         }
 
-        public List<Node> Block()
+        public BlockNode Block()
         {
             List<Node> statements = new List<Node>();
-            while (!CurrentToken().type.Equals(TokenType.END))
+            while (!(CurrentToken().type.Equals(TokenType.END)))
             {
                 statements.Add(Statement());
+                Console.WriteLine("=============== Statement found! =================");
             }
             MatchAndEat(TokenType.END);
-            Console.WriteLine("END TOKEN FOUND\n");
-            return statements;
+            Console.WriteLine("END TOKEN FOUND");
+            return new BlockNode(statements);
         }
 
         public Node Assignment()
@@ -488,6 +498,16 @@ namespace Calculator
             node = new AssignmentNode(name, value, this);
             return node;
         }
+
+        public Node While()
+        {
+            Node condition, body;
+            MatchAndEat(TokenType.WHILE);
+            condition = Expression();
+            body = Block();
+            return new WhileNode(condition, body);
+        }
+
         //Symbol Methods
 
         public Object setVariable(String name, Object value)

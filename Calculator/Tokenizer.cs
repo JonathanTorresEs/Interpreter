@@ -215,8 +215,14 @@ namespace Calculator
             TokenType type = TokenType.UNKNOWN;
             switch (str)
             {
+                case "script":
+                    type = TokenType.SCRIPT;
+                    break;
                 case "end":
                     type = TokenType.END;
+                    break;
+                case "while":
+                    type = TokenType.WHILE;
                     break;
                 case "print":
                     type = TokenType.PRINT;
@@ -226,9 +232,6 @@ namespace Calculator
                     break;
                 case "wait":
                     type = TokenType.WAIT;
-                    break;
-                case "script":
-                    type = TokenType.SCRIPT;
                     break;
                 default:
                     type = TokenType.KEYWORD;
