@@ -21,53 +21,57 @@ namespace Calculator
             this.left = left;
             this.right = right;
         }
-        public int ToInt(Node node)
+
+        public double ToDouble(Node node)
         {
             Object res = node.Eval();
-            return (int)res;
+            return Double.Parse(res.ToString());
         }
+
         public bool ToBoolean(Node node)
         {
             Object res = node.Eval();
             return (bool)res;
         }
+
         public Object ToObject(Node node)
         {
             return node.Eval();
         }
+
         public override Object Eval()
         {
             Object result = null;
             switch (op)
             {
                 case TokenType.ADD:
-                    result = (int)(ToInt(left) + ToInt(right));
+                    result = (double)(ToDouble(left) + ToDouble(right));
                     break;
                 case TokenType.SUBTRACT:
-                    result = (int)(ToInt(left) - ToInt(right));
+                    result = (double)(ToDouble(left) - ToDouble(right));
                     break;
                 case TokenType.MULTIPLY:
-                    result = (int)(ToInt(left) * ToInt(right));
+                    result = (double)(ToDouble(left) * ToDouble(right));
                     break;
                 case TokenType.MOD:
-                    result = (int)(ToInt(left)) % (ToInt(right));
+                    result = (double)(ToDouble(left)) % (ToDouble(right));
                     break;
                 case TokenType.POWER:
-                    result = (int)(Math.Pow(ToInt(left), ToInt(right)));
+                    result = (double)(Math.Pow(ToDouble(left), ToDouble(right)));
                     break;
                 case TokenType.DIVIDE:
-                    if (ToInt(right) == 0)
+                    if (ToDouble(right) == 0)
                     {
                         Console.WriteLine("Error: Division by Zero!");
                         Environment.Exit(0);
                     }
-                    result = (int)(ToInt(left) / ToInt(right));
+                    result = (double)(ToDouble(left) / ToDouble(right));
                     break;
                 case TokenType.LESS:
-                    result = (bool)(ToInt(left) < ToInt(right));
+                    result = (bool)(ToDouble(left) < ToDouble(right));
                     break;
                 case TokenType.GREATER:
-                    result = (bool)(ToInt(left) > ToInt(right));
+                    result = (bool)(ToDouble(left) > ToDouble(right));
                     break;
                 // != and == work as equal and !equal for strings
                 case TokenType.EQUAL:
@@ -77,10 +81,10 @@ namespace Calculator
                     result = (bool)(!ToObject(left).Equals(ToObject(right)));
                     break;
                 case TokenType.LESSEQUAL:
-                    result = (bool)(ToInt(left) <= ToInt(right));
+                    result = (bool)(ToDouble(left) <= ToDouble(right));
                     break;
                 case TokenType.GREATEREQUAL:
-                    result = (bool)(ToInt(left) >= ToInt(right));
+                    result = (bool)(ToDouble(left) >= ToDouble(right));
                     break;
                 case TokenType.OR:
                     result = (bool)(ToBoolean(left) || ToBoolean(right));

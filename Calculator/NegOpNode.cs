@@ -18,14 +18,14 @@ namespace Calculator
             this.node = node;
         }
 
-        public int ToInt(Node node)
+        public double ToDouble(Node node)
         {
             Object res = node.Eval();
-            return (int) res;
+            return Double.Parse(res.ToString());
         }
         public override Object Eval()
         {
-            Object result = (int) -1*(ToInt(node));
+            Object result = (double) -1*(ToDouble(node));
             return result;
         }
 

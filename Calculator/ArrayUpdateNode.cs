@@ -18,18 +18,19 @@ namespace Calculator
             this.rightSideExpression = rightSideExpression;
         }
 
-        public int ToInt(Node node)
+        public double ToDouble(Node node)
         {
             Object res = node.Eval();
-            return ((int)res);
+            return Double.Parse(res.ToString());
         }
 
         public override Object Eval()
         {
             Object arrayVariable = array.Eval();
-            int index = ToInt(indexExpression);
+            double index = ToDouble(indexExpression);
+            int intIndex = Int32.Parse(index.ToString());
             Object newValue = rightSideExpression.Eval();
-            ((List<Object>)arrayVariable)[index] = newValue;
+            ((List<Object>)arrayVariable)[intIndex] = newValue;
             Object ret = arrayVariable;
             return ret;
     }
