@@ -48,6 +48,9 @@
     <Compile Include="BinOpNode.cs" />
     <Compile Include="BlockNode.cs" />
     <Compile Include="BooleanNode.cs" />
+    <Compile Include="BoundParameter.cs" />
+    <Compile Include="Function.cs" />
+    <Compile Include="FunctionCallNode.cs" />
     <Compile Include="IfNode.cs" />
     <Compile Include="Interpreter.cs" />
     <Compile Include="LookupNode.cs" />
@@ -55,6 +58,7 @@
     <Compile Include="Node.cs" />
     <Compile Include="NotOpNode.cs" />
     <Compile Include="NumberNode.cs" />
+    <Compile Include="Parameter.cs" />
     <Compile Include="PrintNode.cs" />
     <Compile Include="WhileNode.cs" />
     <None Include="script.vpp" />

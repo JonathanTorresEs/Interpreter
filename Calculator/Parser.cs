@@ -367,6 +367,37 @@ namespace Calculator
             return BooleanExpression();
         }
 
+        public Node FunctionDefinition()
+        {
+            MatchAndEat(TokenType.DEF);
+            String functionName = MatchAndEat(TokenType.KEYWORD).text;
+            MatchAndEat(TokenType.LEFT_PAREN);
+
+            List<Parameter> parameters = FunctionDefParameters();
+            MatchAndEat(TokenType.RIGHT_PAREN);
+            Node functionBody = Block();
+
+            Function function = new Function(functionName, functionBody, parameters);
+            Node functionVariable = new AssignmentNode(functionName, function, this);
+            return functionVariable;
+        }
+
+        public List<Parameter> FunctionDefParameters()
+        {
+            List<Parameter> parameters = null;
+            if (CurrentToken().type == TokenType.KEYWORD)
+            {
+                parameters = new List<Parameter>();
+                parameters.Add(new Parameter(MatchAndEat(TokenType.KEYWORD).text));
+                while (CurrentToken().type == TokenType.COMMA)
+                {
+                    MatchAndEat(TokenType.COMMA);
+                    parameters.Add(new Parameter(MatchAndEat(TokenType.KEYWORD).text));
+                }
+            }
+            return parameters;
+        }
+
         //Parser Methods
 
         public bool IsPowOp(TokenType type)
@@ -441,6 +472,18 @@ namespace Calculator
             NextToken().type == TokenType.LEFT_BRACKET;
         }
 
+        public bool IsFunctionDef()
+        {
+            TokenType type = CurrentToken().type;
+            return type == TokenType.DEF && NextToken().type == TokenType.KEYWORD;
+        }
+
+        public bool IsFunctionCall()
+        {
+            TokenType type = CurrentToken().type;
+            return type == TokenType.KEYWORD && NextToken().type == TokenType.LEFT_PAREN;
+        }
+
         public List<Token> getTokens()
         {
             return tokens;
@@ -465,7 +508,15 @@ namespace Calculator
             else if (IsIfElse())
             {
                 node = If();
-            } 
+            }
+            else if (IsFunctionDef())
+            {
+                node = FunctionDefinition();
+            }
+            else if (IsFunctionCall())
+            {
+                node = FunctionCall();
+            }
             else if (type == TokenType.PRINT)
             {
                 MatchAndEat(TokenType.PRINT);
@@ -492,18 +543,26 @@ namespace Calculator
 
         public Node Variable()
         {
-            Token token = MatchAndEat(TokenType.KEYWORD);
-            Node varNode = new VariableNode(token.text, this);
-
-            // Handle array access here
-            if (CurrentToken().type == TokenType.LEFT_BRACKET)
+            Node node = null;
+            if (NextToken().type == TokenType.LEFT_PAREN)
             {
-                MatchAndEat(TokenType.LEFT_BRACKET);
-                Node key = Expression();
-                MatchAndEat(TokenType.RIGHT_BRACKET);
-                return new LookupNode((VariableNode)varNode, key);
+                node = FunctionCall();
             }
-            else return varNode;
+            else
+            {
+                Token token = MatchAndEat(TokenType.KEYWORD);
+                Node varNode = new VariableNode(token.text, this);
+                // Handle array access here
+                if (CurrentToken().type == TokenType.LEFT_BRACKET)
+                {
+                    MatchAndEat(TokenType.LEFT_BRACKET);
+                    Node key = Expression();
+                    MatchAndEat(TokenType.RIGHT_BRACKET);
+                    return new LookupNode((VariableNode)varNode, key);
+                }
+                else return varNode;
+            }
+            return node;
         }
 
         public BlockNode Block()
@@ -592,6 +651,37 @@ namespace Calculator
             return new ArrayUpdateNode(array, indexExpr, rightSideExpr);
         }
 
+        public Node FunctionCall()
+        {
+            String functionName = MatchAndEat(TokenType.KEYWORD).text;
+            Node calleeFunctionName = new VariableNode(functionName, this);
+
+            MatchAndEat(TokenType.LEFT_PAREN);
+            List<Parameter> actualParameters = FunctionCallParameters();
+
+            MatchAndEat(TokenType.RIGHT_PAREN);
+            Node functionCallNode = new FunctionCallNode(calleeFunctionName,actualParameters, this);
+
+            return functionCallNode;
+        }
+
+        public List<Parameter> FunctionCallParameters()
+        {
+            List<Parameter> actualParameters = null;
+            Node expression = Expression();
+            if (expression != null)
+            {
+                actualParameters = new List<Parameter>();
+                actualParameters.Add(new Parameter(expression));
+                while (CurrentToken().type == TokenType.COMMA)
+                {
+                    MatchAndEat(TokenType.COMMA);
+                    actualParameters.Add(new Parameter(Expression()));
+                }
+            }
+            return actualParameters;
+        }
+
         //Symbol Methods
 
         public Object setVariable(String name, Object value)
@@ -616,6 +706,23 @@ namespace Calculator
             symbolTable.TryGetValue(name, out value);
             if (value != null) return value;
             return null;
+        }
+
+        public Object ExecuteFunction(Function function, List<BoundParameter> boundParameters)
+        {
+            // Save the symbolTable
+            Dictionary<String, Object> savedSymbolTable = new Dictionary<String, Object>(symbolTable);
+            // Get bound parameters
+            for (int index = 0; index < boundParameters.Count; index++)
+            {
+                BoundParameter param = (BoundParameter)boundParameters[index];
+                setVariable(param.getName(), param.getValue());
+            }
+            // Eval function
+            Object ret = function.Eval();
+            // Restore symbolTable
+            symbolTable = savedSymbolTable;
+            return ret;
         }
     }
 

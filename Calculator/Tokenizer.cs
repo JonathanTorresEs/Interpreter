@@ -276,6 +276,9 @@ namespace Calculator
                 case "wait":
                     type = TokenType.WAIT;
                     break;
+                case "def":
+                    type = TokenType.DEF;
+                    break;
                 default:
                     type = TokenType.KEYWORD;
                     break;

@@ -39,6 +39,9 @@ namespace Calculator
             Tokenizer tokenizer = new Tokenizer();
             Parser parser = new Parser(tokenizer.Tokenize(source));
 
+            parser.setVariable("pi", 3.14159265358979);
+            parser.setVariable("euler", 2.718281828459045);
+
             if (debug) DumpTokens(parser);
 
             parser.MatchAndEat(TokenType.SCRIPT);
@@ -47,23 +50,7 @@ namespace Calculator
             Node script = parser.Block();
 
             script.Eval();
-
-
-            /*Tokenizer tokenizer = new Tokenizer();
-
-            Parser parser = new Parser(tokenizer.Tokenize(source));
-            //parser.setVariable("PI", 3.14159265358979);
-            //parser.setVariable("EULER", 2.718281828459045);
-
-            if (debug)
-                DumpTokens(parser);
-
-            parser.MatchAndEat(TokenType.SCRIPT);
-
-            List<Node> script = parser.Block();
-
-            foreach(Node statement in script)
-                statement.Eval(); */
+          
         }
 
         public void DumpTokens(Parser parser)
