@@ -42,11 +42,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArrayNode.cs" />
+    <Compile Include="ArrayUpdateNode.cs" />
     <Compile Include="AssignmentNode.cs" />
     <Compile Include="BinOpNode.cs" />
     <Compile Include="BlockNode.cs" />
     <Compile Include="BooleanNode.cs" />
+    <Compile Include="IfNode.cs" />
     <Compile Include="Interpreter.cs" />
+    <Compile Include="LookupNode.cs" />
     <Compile Include="NegOpNode.cs" />
     <Compile Include="Node.cs" />
     <Compile Include="NotOpNode.cs" />

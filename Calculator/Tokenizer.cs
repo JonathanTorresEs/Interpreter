@@ -86,7 +86,18 @@ namespace Calculator
         public bool IsParen(char chr)
         {
             bool prntOp = chr == '(' || chr == ')';
-            return prntOp;
+
+            bool brktOp = chr == '[' || chr == ']';
+
+            bool puncOp = chr == ',';
+
+            return prntOp || brktOp || puncOp;
+        }
+
+        public bool IsPunc(char chr)
+        {
+            bool puncOp = chr == ',';
+            return puncOp;
         }
 
         public TokenType FindParenType(char chr)
@@ -99,6 +110,27 @@ namespace Calculator
                     break;
                 case ')':
                     type = TokenType.RIGHT_PAREN;
+                    break;
+                case '[':
+                    type = TokenType.LEFT_BRACKET;
+                    break;
+                case ']':
+                    type = TokenType.RIGHT_BRACKET;
+                    break;
+                case ',':
+                    type = TokenType.COMMA;
+                    break;
+            }
+            return type;
+        }
+
+        public TokenType FindPuncType(char firstOperator)
+        {
+            TokenType type = TokenType.UNKNOWN;
+            switch (firstOperator)
+            {
+                case ',':
+                    type = TokenType.COMMA;
                     break;
             }
             return type;
@@ -146,6 +178,11 @@ namespace Calculator
                         else if (chr == '#')
                         {
                             state = TokenizeState.COMMENT;
+                        }
+                        else if (IsPunc(chr))
+                        {
+                            TokenType puncType = FindPuncType(chr);
+                            tokens.Add(new Token(Char.ToString(chr), puncType));
                         }
                         break;
                     case TokenizeState.OPERATOR:
@@ -223,6 +260,12 @@ namespace Calculator
                     break;
                 case "while":
                     type = TokenType.WHILE;
+                    break;
+                case "if":
+                    type = TokenType.IF;
+                    break;
+                case "else":
+                    type = TokenType.ELSE;
                     break;
                 case "print":
                     type = TokenType.PRINT;

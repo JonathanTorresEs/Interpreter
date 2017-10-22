@@ -428,6 +428,19 @@ namespace Calculator
             return CurrentToken().type == TokenType.WHILE;
         }
 
+        public bool IsIfElse()
+        {
+            TokenType type = CurrentToken().type;
+            return type == TokenType.IF || type == TokenType.ELSE;
+        }
+
+        public bool IsArrayAccess()
+        {
+            TokenType type = CurrentToken().type;
+            return type == TokenType.KEYWORD &&
+            NextToken().type == TokenType.LEFT_BRACKET;
+        }
+
         public List<Token> getTokens()
         {
             return tokens;
@@ -441,10 +454,18 @@ namespace Calculator
             {
                 node = Assignment();
             }
+            else if (IsArrayAccess())
+            {
+                node = ArrayUpdate();
+            }
             else if (IsWhile())
             {
                 node = While();
             }
+            else if (IsIfElse())
+            {
+                node = If();
+            } 
             else if (type == TokenType.PRINT)
             {
                 MatchAndEat(TokenType.PRINT);
@@ -459,7 +480,7 @@ namespace Calculator
             {
                 MatchAndEat(TokenType.WAIT);
                 node = new WaitNode(Expression());
-            } 
+            }
             else 
             {
                 Console.WriteLine("Unknown language construct: "
@@ -472,8 +493,17 @@ namespace Calculator
         public Node Variable()
         {
             Token token = MatchAndEat(TokenType.KEYWORD);
-            Node node = new VariableNode(token.text, this);
-            return node;
+            Node varNode = new VariableNode(token.text, this);
+
+            // Handle array access here
+            if (CurrentToken().type == TokenType.LEFT_BRACKET)
+            {
+                MatchAndEat(TokenType.LEFT_BRACKET);
+                Node key = Expression();
+                MatchAndEat(TokenType.RIGHT_BRACKET);
+                return new LookupNode((VariableNode)varNode, key);
+            }
+            else return varNode;
         }
 
         public BlockNode Block()
@@ -493,9 +523,18 @@ namespace Calculator
         {
             Node node = null;
             String name = MatchAndEat(TokenType.KEYWORD).text;
+
             MatchAndEat(TokenType.ASSIGNMENT);
-            Node value = Expression();
-            node = new AssignmentNode(name, value, this);
+
+            if (CurrentToken().type == TokenType.LEFT_BRACKET)
+            {
+                node = ArrayDefinition(name);
+            }
+            else
+            {
+                Node value = Expression();
+                node = new AssignmentNode(name, value, this);
+            }
             return node;
         }
 
@@ -506,6 +545,51 @@ namespace Calculator
             condition = Expression();
             body = Block();
             return new WhileNode(condition, body);
+        }
+
+        public Node If()
+        {
+            Node condition = null, thenPart = null, elsePart = null;
+            MatchAndEat(TokenType.IF);
+            condition = Expression();
+            thenPart = Block();
+            if (CurrentToken().type == TokenType.ELSE)
+            {
+                MatchAndEat(TokenType.ELSE);
+                if (CurrentToken().type == TokenType.IF) elsePart = If();
+                else elsePart = Block();
+            }
+            return new IfNode(condition, thenPart, elsePart);
+        }
+
+        public Node ArrayDefinition(String name)
+        {
+            List<Node> elements = new List<Node>();
+            MatchAndEat(TokenType.LEFT_BRACKET);
+            if (CurrentToken().type != TokenType.RIGHT_BRACKET)
+            {
+                elements.Add(Expression());
+                while (CurrentToken().type != TokenType.RIGHT_BRACKET)
+                {
+                    MatchAndEat(TokenType.COMMA);
+                    elements.Add(Expression());
+                }
+            }
+            MatchAndEat(TokenType.RIGHT_BRACKET);
+            return new AssignmentNode(name, new ArrayNode(elements), this);
+        }
+
+        public Node ArrayUpdate()
+        {
+            String arrayName = MatchAndEat(TokenType.KEYWORD).text;
+            Node array = new VariableNode(arrayName, this);
+            MatchAndEat(TokenType.LEFT_BRACKET);
+            Node indexExpr = Expression();
+            MatchAndEat(TokenType.RIGHT_BRACKET);
+            MatchAndEat(TokenType.ASSIGNMENT);
+            Node rightSideExpr = Expression();
+
+            return new ArrayUpdateNode(array, indexExpr, rightSideExpr);
         }
 
         //Symbol Methods
