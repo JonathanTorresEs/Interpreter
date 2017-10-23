@@ -459,6 +459,11 @@ namespace Calculator
             return CurrentToken().type == TokenType.WHILE;
         }
 
+        public bool IsFor()
+        {
+            return CurrentToken().type == TokenType.FOR;
+        }
+
         public bool IsIfElse()
         {
             TokenType type = CurrentToken().type;
@@ -504,6 +509,10 @@ namespace Calculator
             else if (IsWhile())
             {
                 node = While();
+            }
+            else if (IsFor())
+            {
+                node = For();
             }
             else if (IsIfElse())
             {
@@ -604,6 +613,25 @@ namespace Calculator
             condition = Expression();
             body = Block();
             return new WhileNode(condition, body);
+        }
+
+        public Node For()
+        {
+            MatchAndEat(TokenType.FOR);
+            Node variable = Assignment();
+
+            MatchAndEat(TokenType.COMMA);
+            Node condition = Expression();
+
+            MatchAndEat(TokenType.COMMA);
+            String name = MatchAndEat(TokenType.KEYWORD).text;
+            MatchAndEat(TokenType.ASSIGNMENT);
+
+            Node operation = Expression();
+            Node action = new AssignmentNode(name, operation, this);
+
+            Node body = Block();
+            return new ForNode(variable, condition, action, body);
         }
 
         public Node If()

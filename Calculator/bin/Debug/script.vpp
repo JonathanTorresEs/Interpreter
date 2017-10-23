@@ -1,14 +1,6 @@
-script
-	count = 1
-	while count <= 5
-		if count==5
-		println "High Five!"
-		end
-		else
-		println "Hello World!"
-		end
-		wait 500
-		count = count + 1
-		print count
-	end
+script  
+	for count = 1, count <= 5, count = count + 1
+	println "Hello World!" 
+	wait 500
+	end 
 end

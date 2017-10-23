@@ -261,6 +261,9 @@ namespace Calculator
                 case "while":
                     type = TokenType.WHILE;
                     break;
+                case "for":
+                    type = TokenType.FOR;
+                    break;
                 case "if":
                     type = TokenType.IF;
                     break;

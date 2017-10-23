@@ -14,7 +14,7 @@ namespace Calculator
             Console.WriteLine("Ejecutando Interpreter");
 
             string[] args = { "script.vpp" };
-            bool debug = false;
+            bool debug = true;
 
             if (args.Length < 1) {
                 Console.WriteLine("Usage: Demo <script>"); return;

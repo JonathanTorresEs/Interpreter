@@ -49,6 +49,7 @@
     <Compile Include="BlockNode.cs" />
     <Compile Include="BooleanNode.cs" />
     <Compile Include="BoundParameter.cs" />
+    <Compile Include="ForNode.cs" />
     <Compile Include="Function.cs" />
     <Compile Include="FunctionCallNode.cs" />
     <Compile Include="IfNode.cs" />
