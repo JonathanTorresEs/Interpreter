@@ -5,6 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+//This code was heavily based on the book "Practical Interpreter Instruction".
+//APA Reference:
+//Emin Coşkun, M. (2015). Practical Interpreter Construction. Washington D.C.: LeanPub.
+//You can too buy this book at: https://leanpub.com/pic
+
 namespace Calculator
 {
     class Interpreter
@@ -40,7 +45,7 @@ namespace Calculator
             Parser parser = new Parser(tokenizer.Tokenize(source));
 
             parser.setVariable("pi", 3.14159265358979);
-            parser.setVariable("euler", 2.718281828459045);
+            parser.setVariable("e", 2.718281828459045);
 
             if (debug) DumpTokens(parser);
 
